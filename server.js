@@ -5,8 +5,8 @@ var app = express();
 var mailparser = new MailParser();
 var bodyParser = require('body-parser');
 
-app.listen(3000);
-
+var server = app.listen();
+server.timeout = 100000;
 // create application/json parser
 var jsonParser = bodyParser.json({ limit: '200mb' });
 
