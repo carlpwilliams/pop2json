@@ -7,8 +7,6 @@ var bodyParser = require('body-parser');
 
 app.listen(3000);
 
-
-
 // create application/json parser
 var jsonParser = bodyParser.json({ limit: '200mb' });
 
@@ -23,9 +21,8 @@ app.post('/', jsonParser, function (req, res) {
 
 function getEmail(res, username, password, host, port) {
     var client = {};
-    var totalMessages = 0;
     var currentMessageId = 1;
-    var retVal = { "": "", "errors": [], "mailObjects": [] };
+    var retVal = { "gotEmails": false, "totalMessages": 0, "errors": [], "mailObjects": [] };
     client = new POP3Client(port, host, {
         tlserrs: false,
         enabletls: false,
@@ -33,32 +30,23 @@ function getEmail(res, username, password, host, port) {
     });
 
     client.on("error", function (err) {
-
         if (err.errno === 111) handleError(retVal, "Unable to connect to server");
         else handleError(retVal, "Server error occurred");
         finish(res, retVal);
     });
 
-
     client.on("invalid-state", function (cmd) {
         handleError(retval, "Invalid state. You tried calling " + cmd);
     });
 
-
     client.on("connect", function () {
-        console.log("CONNECT success");
         client.login(username, password);
-
     });
 
     client.on("login", function (status, rawdata) {
-
         if (status) {
-            console.log("LOGIN/PASS success");
             client.list();
-
         } else {
-            console.info('login fail');
             handleError(retVal, "LOGIN/PASS failed");
             client.quit();
             finish(res, retVal);
@@ -67,51 +55,40 @@ function getEmail(res, username, password, host, port) {
 
     // Data is a 1-based index of messages, if there are any messages
     client.on("list", function (status, msgcount, msgnumber, data, rawdata) {
-        totalMessages = msgcount;
         retVal.totalMessages = msgcount;
         retVal.gotEmails = true;
         if (status === false) {
             handleError(retVal, "LIST failed");
             client.quit();
         } else {
-
-            console.log("LIST success with " + msgcount + " element(s)");
-
             if (msgcount > 0)
                 client.retr(currentMessageId);
             else
                 client.quit();
-
         }
     });
 
     client.on("retr", function (status, msgnumber, data, rawdata) {
-
         if (status === true) {
             currentMessageId++;
-            console.log("RETR success for msgnumber " + msgnumber);
-            //            client.dele(msgnumber);
+            // parse the email to a json object.
             mailparser.write(data);
             mailparser.end();
+            // get the next message
             client.retr(currentMessageId);
-
         } else {
-            if (msgnumber !== (retVal.totalMessages +1)) {
+            if (msgnumber !== (retVal.totalMessages + 1)) {
                 handleError(retVal, "RETR failed for msgnumber " + msgnumber);
             }
             client.quit();
-
         }
     });
 
     mailparser.on("end", function (mail_object) {
         retVal.mailObjects.push(mail_object);
-
     });
 
     client.on("quit", function (status, rawdata) {
-        if (status === true) console.log("QUIT success");
-        else console.log("QUIT failed");
         finish(res, retVal);
     });
 } // end of getEmail
