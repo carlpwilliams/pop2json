@@ -1,0 +1,12 @@
+{
+  "name": "Subcona-Journal-API",
+  "description": "Subcona Journal API",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "mailparser": "^0.5.3",
+    "poplib": "^0.1.7"
+  }
+}

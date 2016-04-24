@@ -1,0 +1,23 @@
+{
+  "name": "Subcona-Journal-API",
+  "description": "Subcona Journal API",
+  "main": "index.htm",
+  "authors": [
+    "Carl Williams <carl.williams@betfred.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "subcona.co.uk",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-relative-date": "^2.0.0"
+  }
+}
